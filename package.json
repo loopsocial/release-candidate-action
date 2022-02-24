@@ -1,0 +1,25 @@
+{
+  "name": "release-candidate-action",
+  "version": "0.0.1",
+  "description": "Github action that will create a Release Candidate branch, create a Github Issue, and post to a Slack webhook.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loopsocial/release-candidate-action.git"
+  },
+  "keywords": [
+    "github",
+    "action",
+    "firework",
+    "loopsocial"
+  ],
+  "author": "Firework",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/loopsocial/release-candidate-action/issues"
+  },
+  "homepage": "https://github.com/loopsocial/release-candidate-action#readme"
+}
