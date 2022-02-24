@@ -4,7 +4,9 @@ inputs:
   github-token: # id of input
     description: "Access token for your repository"
     required: true
-    default: ""
+  github-repository:
+    description: "Github owner/repository"
+    required: true
 outputs:
   time: # id of output
     description: "The time we greeted you"
