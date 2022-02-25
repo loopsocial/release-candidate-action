@@ -38,7 +38,7 @@ const getTags = async (octokit) => {
   return { latestTag, nextTag }
 }
 
-const getCommitSummary = async (octokit, latestTag) => {
+const getCommitDiff = async (octokit, latestTag) => {
   const { owner, repo } = github.context.repo()
   const { status, commits } = await octokit.rest.repos.compareCommitsWithBasehead({
     owner,
@@ -62,10 +62,10 @@ const createReleaseBranch = async (octokit, nextTag) => {
   })
 }
 
-const createIssue = async (octokit, latestTag, nextTag, commitSummary) => {
+const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
   const body = `
   **Script generated description. DO NOT MODIFY**
-  
+
   ## Metadata
   - Release tag: ${nextTag}
   - Branch: release/${nextTag}
@@ -79,7 +79,7 @@ const createIssue = async (octokit, latestTag, nextTag, commitSummary) => {
   - To cancel the push: Close the issue directly.
 
   ## Included commits (compared to ${latestTag})
-  ${commitSummary}
+  ${commitDiff}
   `
 
   const { owner, repo } = github.context.repo()
@@ -141,13 +141,13 @@ const run = async () => {
     
     // Get next tag and commit history 
     const { latestTag, nextTag } = getTags(octokit)
-    const commitSummary = await getCommitSummary(octokit, latestTag)
+    const commitDiff = await getCommitDiff(octokit, latestTag)
 
     // Create release branch
     await createReleaseBranch(octokit, nextTag)
   
     // Create issue
-    const issueUrl = await createIssue(octokit, latestTag, nextTag, commitSummary)
+    const issueUrl = await createIssue(octokit, latestTag, nextTag, commitDiff)
 
     // Send webhook to Slack
     await postToSlack(nextTag, issueUrl)
