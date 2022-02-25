@@ -25,7 +25,7 @@ const getTags = async (octokit) => {
   // Loop through tags and see if there is another tag from today.
   const today = getTodaysDate()
   const latestTag = tags.find((tag) => tag.name.startsWith('v'))
-  const existing = tags.find((tag) => tag.name.startsWith(today))
+  const existing = tags.find((tag) => tag.name.startsWith(`v${today}`))
   let nextTag
   if (existing) {
     // Found existing tag, increment the N by 1.
@@ -38,8 +38,18 @@ const getTags = async (octokit) => {
   return { latestTag, nextTag }
 }
 
-const getCommitSummary = async () => {
-  // TODO
+const getCommitSummary = async (octokit, latestTag) => {
+  const { owner, repo } = github.context.repo()
+  const { status, commits } = await octokit.rest.repos.compareCommitsWithBasehead({
+    owner,
+    repo,
+    basehead: `${latestTag}...${github.context.sha}`,
+    per_page: 100
+  })
+
+  if (status !== 'ahead') throw Error('Head branch is not ahead of base branch')
+  
+  return commits.reduce((prev, curr) => prev + `${curr.commit.message}\n`, "")
 }
 
 const createReleaseBranch = async (octokit, nextTag) => {
@@ -55,6 +65,7 @@ const createReleaseBranch = async (octokit, nextTag) => {
 const createIssue = async (octokit, latestTag, nextTag, commitSummary) => {
   const body = `
   **Script generated description. DO NOT MODIFY**
+  
   ## Metadata
   - Release tag: ${nextTag}
   - Branch: release/${nextTag}
@@ -130,7 +141,7 @@ const run = async () => {
     
     // Get next tag and commit history 
     const { latestTag, nextTag } = getTags(octokit)
-    const commitSummary = await getCommitSummary()
+    const commitSummary = await getCommitSummary(octokit, latestTag)
 
     // Create release branch
     await createReleaseBranch(octokit, nextTag)
@@ -141,7 +152,7 @@ const run = async () => {
     // Send webhook to Slack
     await postToSlack(nextTag, issueUrl)
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed(error.message)
   }
 }
 run()
