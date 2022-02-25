@@ -10,8 +10,9 @@ const getInput = (key) => {
 const getTodaysDate = () => {
   const date = new Date()
   const year = date.getFullYear()
-  const month = date.getMonth() < 10 ? `0${date.getMonth()}` : date.getMonth()
-  const day = date.getDay() < 10 ? `0${date.getDay()}` : date.getDay()
+  let month = date.getMonth() + 1
+  month = month < 10 ? `0${month}` : month
+  const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate()
   return `${year}${month}${day}`
 }
 
