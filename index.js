@@ -82,13 +82,49 @@ const createIssue = async (octokit, latestTag, nextTag, commitSummary) => {
   return issue.data.html_url
 }
 
-const postToSlack = async () => {
+const postToSlack = async (nextTag, issueUrl) => {
+  const body = {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": `[${nextTag}] Release Candidate created 🧪`
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "The Release Candidate is ready for testing."
+        },
+        "accessory": {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Go"
+          },
+          "url": issueUrl,
+          "action_id": "button-action"
+        }
+      }
+    ]
+  }
 
+  const { owner, repo } = github.context.repo()
+  const webhookUrl = await octokit.rest.actions.getRepoSecret({
+    owner,
+    repo,
+    secret_name: 'SLACK_WEBHOOK_URL',
+  })
+
+  const request = new Request(webhookUrl, { method: 'POST', body })
+  await fetch(request)
 }
 
 const run = async () => {
   try {
-    // Init
+    // Get token and init
     const token = getInput('github-token')
     const octokit = github.getOctokit(token)
     
@@ -100,13 +136,12 @@ const run = async () => {
     await createReleaseBranch(octokit, nextTag)
   
     // Create issue
-    await createIssue(octokit, latestTag, nextTag, commitSummary)
+    const issueUrl = await createIssue(octokit, latestTag, nextTag, commitSummary)
 
     // Send webhook to Slack
-    await postToSlack()
+    await postToSlack(nextTag, issueUrl)
   } catch (error) {
     core.setFailed(error.message);
   }
 }
-
 run()
