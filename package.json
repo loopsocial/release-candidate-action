@@ -16,7 +16,7 @@
     "firework",
     "loopsocial"
   ],
-  "author": "Firework",
+  "author": "Deric Walintukan <deric@fireworkhq.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/loopsocial/release-candidate-action/issues"
