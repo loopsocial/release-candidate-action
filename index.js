@@ -1,12 +1,21 @@
 const github = require('@actions/github')
 const core = require('@actions/core')
 
+/**
+ * Gets the input from the used action.
+ * @param {string} key Input key to fetch
+ * @returns {string} Returns the value of the input
+ */
 const getInput = (key) => {
   const input = core.getInput(key)
   if (!input) throw Error(`Input "${key}" was not defined`)
   return input
 }
 
+/**
+ * Returns today's date in the format YYYYMMDD
+ * @returns {string} Today's date 
+ */
 const getTodaysDate = () => {
   const date = new Date()
   const year = date.getFullYear()
@@ -16,9 +25,14 @@ const getTodaysDate = () => {
   return `${year}${month}${day}`
 }
 
-// Tags are formatted as: YYYYMMDD.N
-// N is the current deployment of the day, starting with 1.
-// If multiple deployments happen on the same date, N increments.
+/**
+ * Gets the latest tag and the name of the next tag.
+ * Tags are formatted as: YYYYMMDD.N
+ * N is the current deployment of the day, starting with 1.
+ * If multiple deployments happen on the same date, N increments.
+ * @param {object} octokit Octokit
+ * @returns {object} Returns the latest and next tags
+ */
 const getTags = async (octokit) => {
   const { owner, repo } = github.context.repo()
   const tags = await octokit.rest.repos.listTags({ owner, repo })
@@ -39,6 +53,12 @@ const getTags = async (octokit) => {
   return { latestTag, nextTag }
 }
 
+/**
+ * Returns the commit diff between the last tag and current tag.
+ * @param {object} octokit Octokit
+ * @param {string} latestTag Latest tag
+ * @returns {string} List of all the commits from the last tag
+ */
 const getCommitDiff = async (octokit, latestTag) => {
   const { owner, repo } = github.context.repo()
   const { status, commits } = await octokit.rest.repos.compareCommitsWithBasehead({
@@ -53,6 +73,11 @@ const getCommitDiff = async (octokit, latestTag) => {
   return commits.reduce((prev, curr) => prev + `${curr.commit.message}\n`, "")
 }
 
+/**
+ * Creates the release branch.
+ * @param {object} octokit Octokit
+ * @param {string} nextTag Next tag
+ */
 const createReleaseBranch = async (octokit, nextTag) => {
   const { owner, repo } = github.context.repo()
   await octokit.rest.git.createRef({
@@ -63,6 +88,14 @@ const createReleaseBranch = async (octokit, nextTag) => {
   })
 }
 
+/**
+ * Creates the Release Candidate issue.
+ * @param {object} octokit Octokit
+ * @param {string} latestTag Latest tag
+ * @param {string} nextTag Next tag
+ * @param {string} commitDiff Commit history from the last tag
+ * @returns {string} URL of the Release Candidate issue
+ */
 const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
   const body = `
   **Script generated description. DO NOT MODIFY**
@@ -84,16 +117,21 @@ const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
   `
 
   const { owner, repo } = github.context.repo()
-  const issue = await octokit.rest.issues.create({
+  const { data: { html_url } } = await octokit.rest.issues.create({
     owner,
     repo,
     title: `Release candidate ${nextTag}`,
     labels: ['RC'],
     body
   })
-  return issue.data.html_url
+  return html_url
 }
 
+/**
+ * Posts to Slack via webhook.
+ * @param {string} nextTag Next tag
+ * @param {string} issueUrl URL of the Release Candidate issue
+ */
 const postToSlack = async (nextTag, issueUrl) => {
   const body = {
     "blocks": [
