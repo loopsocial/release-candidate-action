@@ -34,7 +34,7 @@ const getTodaysDate = () => {
  * @returns {object} Returns the latest and next tags
  */
 const getTags = async (octokit) => {
-  const { owner, repo } = github.context.repo()
+  const { owner, repo } = github.context.repo
   const tags = await octokit.rest.repos.listTags({ owner, repo })
   
   // Loop through tags and see if there is another tag from today.
@@ -60,7 +60,7 @@ const getTags = async (octokit) => {
  * @returns {string} List of all the commits from the last tag
  */
 const getCommitDiff = async (octokit, latestTag) => {
-  const { owner, repo } = github.context.repo()
+  const { owner, repo } = github.context.repo
   const { status, commits } = await octokit.rest.repos.compareCommitsWithBasehead({
     owner,
     repo,
@@ -79,7 +79,7 @@ const getCommitDiff = async (octokit, latestTag) => {
  * @param {string} nextTag Next tag
  */
 const createReleaseBranch = async (octokit, nextTag) => {
-  const { owner, repo } = github.context.repo()
+  const { owner, repo } = github.context.repo
   await octokit.rest.git.createRef({
     owner,
     repo,
@@ -116,7 +116,7 @@ const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
   ${commitDiff}
   `
 
-  const { owner, repo } = github.context.repo()
+  const { owner, repo } = github.context.repo
   const { data: { html_url } } = await octokit.rest.issues.create({
     owner,
     repo,
@@ -161,7 +161,7 @@ const postToSlack = async (nextTag, issueUrl) => {
     ]
   }
 
-  const { owner, repo } = github.context.repo()
+  const { owner, repo } = github.context.repo
   const webhookUrl = await octokit.rest.actions.getRepoSecret({
     owner,
     repo,
