@@ -35,8 +35,7 @@ const getTodaysDate = () => {
  */
 const getTags = async (octokit) => {
   const { owner, repo } = github.context.repo
-  const tags = await octokit.rest.repos.listTags({ owner, repo })
-  console.log(tags)
+  const { data: tags } = await octokit.rest.repos.listTags({ owner, repo })
   
   // Loop through tags and see if there is another tag from today.
   const today = getTodaysDate()
@@ -62,7 +61,7 @@ const getTags = async (octokit) => {
  */
 const getCommitDiff = async (octokit, latestTag) => {
   const { owner, repo } = github.context.repo
-  const { status, commits } = await octokit.rest.repos.compareCommitsWithBasehead({
+  const { data: { status, commits } } = await octokit.rest.repos.compareCommitsWithBasehead({
     owner,
     repo,
     basehead: `${latestTag}...${github.context.sha}`,
@@ -118,14 +117,14 @@ const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
   `
 
   const { owner, repo } = github.context.repo
-  const { data: { html_url } } = await octokit.rest.issues.create({
+  const { data: { html_url: issueUrl } } = await octokit.rest.issues.create({
     owner,
     repo,
     title: `Release candidate ${nextTag}`,
     labels: ['RC'],
     body
   })
-  return html_url
+  return issueUrl
 }
 
 /**
@@ -163,7 +162,7 @@ const postToSlack = async (nextTag, issueUrl) => {
   }
 
   const { owner, repo } = github.context.repo
-  const webhookUrl = await octokit.rest.actions.getRepoSecret({
+  const { data: webhookUrl } = await octokit.rest.actions.getRepoSecret({
     owner,
     repo,
     secret_name: 'SLACK_WEBHOOK_URL',
