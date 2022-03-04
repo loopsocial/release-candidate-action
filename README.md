@@ -8,17 +8,17 @@ This Action will:
 
 ## Inputs
 
-## `github-token`
+### `github-token`
 
 **Required**
 Github token to use to call the Github API.
 
-## `slack-webhook-url`
+### `slack-webhook-url`
 
 **Required**
 URL of the Slack webhook to send the message to.
 
-## Example usage
+## Usage
 
 ```yaml
 uses: loopsocial/release-candidate-action@v1.0.0
