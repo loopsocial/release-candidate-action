@@ -1,8 +1,11 @@
 name: "Release Candidate Action"
-description: "Creates a Release Candidate branch, creates a Github Issue, and posts to a Slack webhook."
+description: "Github Action to create a Release Candidate branch."
 inputs:
   github-token:
     description: "Access token for your repository"
+    required: true
+  slack-webhook-url:
+    description: "URL to send Slack webhooks to"
     required: true
 runs:
   using: "node16"
