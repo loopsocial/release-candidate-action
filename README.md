@@ -10,11 +10,13 @@ This Action will:
 
 ## `github-token`
 
-**Required** Github token to use to call the Github API.
+**Required**
+Github token to use to call the Github API.
 
 ## `slack-webhook-url`
 
-**Required** URL of the Slack webhook to send the message to.
+**Required**
+URL of the Slack webhook to send the message to.
 
 ## Example usage
 
