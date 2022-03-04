@@ -36,6 +36,7 @@ const getTodaysDate = () => {
 const getTags = async (octokit) => {
   const { owner, repo } = github.context.repo
   const tags = await octokit.rest.repos.listTags({ owner, repo })
+  console.log(tags)
   
   // Loop through tags and see if there is another tag from today.
   const today = getTodaysDate()
