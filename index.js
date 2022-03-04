@@ -1,5 +1,7 @@
 const github = require('@actions/github')
 const core = require('@actions/core')
+const axios = require('axios')
+const moment = require('moment')
 
 /**
  * Gets the input from the used action.
@@ -13,17 +15,10 @@ const getInput = (key) => {
 }
 
 /**
- * Returns today's date in the format YYYYMMDD
+ * Returns today's date in the format YYYYMMDD.
  * @returns {string} Today's date 
  */
-const getTodaysDate = () => {
-  const date = new Date()
-  const year = date.getFullYear()
-  let month = date.getMonth() + 1
-  month = month < 10 ? `0${month}` : month
-  const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate()
-  return `${year}${month}${day}`
-}
+const getTodaysDate = () => moment().utcOffset(-8).format('YYYYMMDD')
 
 /**
  * Gets the latest tag and the name of the next tag.
@@ -40,17 +35,20 @@ const getTags = async (octokit) => {
   // Loop through tags and see if there is another tag from today.
   const today = getTodaysDate()
   const latestTag = tags.find((tag) => tag.name.startsWith('v'))
-  const existing = tags.find((tag) => tag.name.startsWith(`v${today}`))
+  const existingTag = tags.find((tag) => tag.name.startsWith(`v${today}`))
   let nextTag
-  if (existing) {
+  if (existingTag) {
     // Found existing tag, increment the N by 1.
-    const [, n] = existing.split('.')
+    const [, n] = existingTag.name.split('.')
     nextTag = `v${today}.${Number.parseInt(n) + 1}`
   } else {
     // No existing tag found, start N at 1.
     nextTag = `v${today}.1`
   }
-  return { latestTag, nextTag }
+  return { 
+    latestTag: latestTag.name,
+    nextTag
+  }
 }
 
 /**
@@ -70,7 +68,11 @@ const getCommitDiff = async (octokit, latestTag) => {
 
   if (status !== 'ahead') throw Error('Head branch is not ahead of base branch')
   
-  return commits.reduce((prev, curr) => prev + `${curr.commit.message}\n`, "")
+  return commits.reduce((acc, curr) => {
+    const sha = `<a href="${curr.html_url}">${curr.sha.substring(0, 7)}</a>`
+    const message = curr.commit.message
+    return acc + `${sha}\t${message}\n`
+  }, "")
 }
 
 /**
@@ -161,15 +163,8 @@ const postToSlack = async (nextTag, issueUrl) => {
     ]
   }
 
-  const { owner, repo } = github.context.repo
-  const { data: webhookUrl } = await octokit.rest.actions.getRepoSecret({
-    owner,
-    repo,
-    secret_name: 'SLACK_WEBHOOK_URL',
-  })
-
-  const request = new Request(webhookUrl, { method: 'POST', body })
-  await fetch(request)
+  const webhookUrl = getInput('slack-webhook-url')
+  await axios.post(webhookUrl, body)
 }
 
 const run = async () => {
@@ -179,7 +174,7 @@ const run = async () => {
     const octokit = github.getOctokit(token)
     
     // Get next tag and commit history 
-    const { latestTag, nextTag } = getTags(octokit)
+    const { latestTag, nextTag } = await getTags(octokit)
     const commitDiff = await getCommitDiff(octokit, latestTag)
 
     // Create release branch
