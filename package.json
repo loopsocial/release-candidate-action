@@ -24,6 +24,8 @@
   "homepage": "https://github.com/loopsocial/release-candidate-action#readme",
   "dependencies": {
     "@actions/core": "^1.6.0",
-    "@actions/github": "^5.0.0"
+    "@actions/github": "^5.0.0",
+    "axios": "^0.26.0",
+    "moment": "^2.29.1"
   }
 }
