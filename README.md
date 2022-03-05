@@ -11,7 +11,12 @@ This Action will:
 ### `github-token`
 
 **Required**
-Github token to use to call the Github API.
+Github default token (`GITHUB_TOKEN`) used to call the Github API.
+
+### `workflow-token`
+
+**Required**
+Github personal access token (`WORKFLOW_TOKEN`) used to call the Github API. This is required to create the ref since the default token cannot do this.
 
 ### `slack-webhook-url`
 
@@ -32,8 +37,9 @@ jobs:
     steps:
       - name: Create Release Candidate
         id: create_rc
-        uses: loopsocial/release-candidate-action@v1.0.1
+        uses: loopsocial/release-candidate-action@v1.0.2
         with:
-          github-token: ${{ secrets.WORKFLOW_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          workflow-token: ${{ secrets.WORKFLOW_TOKEN }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 ```
