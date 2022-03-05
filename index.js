@@ -77,10 +77,11 @@ const getCommitDiff = async (octokit, latestTag) => {
 
 /**
  * Creates the release branch.
- * @param {object} octokit Octokit
  * @param {string} nextTag Next tag
  */
-const createReleaseBranch = async (octokit, nextTag) => {
+const createReleaseBranch = async (nextTag) => {
+  const token = getInput('workflow-token')
+  const octokit = github.getOctokit(token)
   const { owner, repo } = github.context.repo
   await octokit.rest.git.createRef({
     owner,
@@ -178,7 +179,7 @@ const run = async () => {
     const commitDiff = await getCommitDiff(octokit, latestTag)
 
     // Create release branch
-    await createReleaseBranch(octokit, nextTag)
+    await createReleaseBranch(nextTag)
   
     // Create issue
     const issueUrl = await createIssue(octokit, latestTag, nextTag, commitDiff)
