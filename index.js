@@ -148,7 +148,7 @@ const postToSlack = async (nextTag, issueUrl) => {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": "The Release Candidate is ready for testing."
+          "text": `\`${nextTag}\` is ready for testing.`
         },
         "accessory": {
           "type": "button",
