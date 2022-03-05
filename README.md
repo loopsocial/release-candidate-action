@@ -10,18 +10,15 @@ This Action will:
 
 ### `github-token`
 
-**Required**
-Github default token (`GITHUB_TOKEN`) used to call the Github API.
+(Required) Github default token (`GITHUB_TOKEN`) used to call the Github API.
 
 ### `workflow-token`
 
-**Required**
-Github personal access token (`WORKFLOW_TOKEN`) used to call the Github API. This is required to create the ref since the default token cannot do this.
+(Required) Github personal access token (`WORKFLOW_TOKEN`) used to call the Github API. This is required to create the ref since the default token cannot do this.
 
 ### `slack-webhook-url`
 
-**Required**
-URL of the Slack webhook to send the message to.
+(Required) URL of the Slack webhook to send the message to.
 
 ## Example Usage
 
