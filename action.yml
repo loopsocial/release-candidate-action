@@ -2,10 +2,10 @@ name: "Release Candidate Action"
 description: "Github Action to create a Release Candidate branch."
 inputs:
   github-token:
-    description: "Default Github token for your repository"
+    description: "Default Github token"
     required: true
   workflow-token:
-    description: "Personal access token for your repository"
+    description: "Personal access token"
     required: true
   slack-webhook-url:
     description: "URL to send Slack webhooks to"
