@@ -45,6 +45,10 @@ const getTags = async (octokit) => {
     // No existing tag found, start N at 1.
     nextTag = `v${today}.1`
   }
+
+  console.log(`Latest tag: ${latestTag.name}`)
+  console.log(`Next tag: ${nextTag}`)
+
   return { 
     latestTag: latestTag.name,
     nextTag
@@ -59,13 +63,15 @@ const getTags = async (octokit) => {
  */
 const getCommitDiff = async (octokit, latestTag) => {
   const { owner, repo } = github.context.repo
+  const currentSha = github.context.sha
   const { data: { status, commits } } = await octokit.rest.repos.compareCommitsWithBasehead({
     owner,
     repo,
-    basehead: `${latestTag}...${github.context.sha}`,
+    basehead: `${latestTag}...${currentSha}`,
     per_page: 100
   })
 
+  console.log(`Commit diff: ${latestTag}...${currentSha}`)
   if (status !== 'ahead') throw Error('Head branch is not ahead of base branch')
   
   return commits.reduce((acc, curr) => {
@@ -83,6 +89,7 @@ const createReleaseBranch = async (nextTag) => {
   const token = getInput('workflow-token')
   const octokit = github.getOctokit(token)
   const { owner, repo } = github.context.repo
+  console.log(`Release branch: release/${nextTag}`)
   await octokit.rest.git.createRef({
     owner,
     repo,
