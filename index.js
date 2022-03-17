@@ -67,7 +67,7 @@ const getCommitDiff = async (octokit, latestTag) => {
   const { data: { status, commits } } = await octokit.rest.repos.compareCommitsWithBasehead({
     owner,
     repo,
-    basehead: `${latestTag}...${currentSha}`,
+    basehead: `release/${latestTag}...${currentSha}`,
     per_page: 100
   })
 
@@ -76,6 +76,8 @@ const getCommitDiff = async (octokit, latestTag) => {
   
   return commits.reduce((acc, curr) => {
     const sha = `<a href="${curr.html_url}">${curr.sha.substring(0, 7)}</a>`
+    // Add new prod domain (#5325)\n\n* add more prod naboo domain names (#5313)\r\n\r\n* add fw.camera
+    const regex = /(.+)\n/
     const message = curr.commit.message
     return acc + `${sha}\t${message}\n`
   }, "")
@@ -107,24 +109,24 @@ const createReleaseBranch = async (nextTag) => {
  * @returns {string} URL of the Release Candidate issue
  */
 const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
-  const body = `
-  **Script generated description. DO NOT MODIFY**
-
-  ## Metadata
-  - Release tag: ${nextTag}
-  - Branch: release/${nextTag}
-
-  ## Actions
-  - To add release fixes:
-    1. \`git checkout release/${nextTag}\`
-    2. Check in fixes to the release branch.
-    3. (If applied) Cherry-pick the fix to \`master/main\`.
-  - To approve the push: Add \`QA Approved\` label and close the issue.
-  - To cancel the push: Close the issue directly.
-
-  ## Included commits (compared to ${latestTag})
-  ${commitDiff}
-  `
+  const body = 
+    '**Script generated description. DO NOT MODIFY**\n' +
+    '\n' +
+    '## Metadata\n' +
+    '- Release tag: ${nextTag}\n' +
+    '- Branch: release/${nextTag}\n' +
+    '\n' +
+    '## Actions\n' +
+    '- To add release fixes:\n' +
+    '\t1. `git checkout release/${nextTag}`\n' +
+    '\t2. Check in fixes to the release branch.\n' +
+    '\t3. (If applied) Cherry-pick the fix to `master/main`.\n' +
+    '- To approve the push: Add `QA Approved` label and close the issue.\n' +
+    '- To cancel the push: Close the issue directly.\n' +
+    '\n' +
+    '## Included commits (compared to ${latestTag})\n' +
+    '\n' +
+    commitDiff
 
   const { owner, repo } = github.context.repo
   const { data: { html_url: issueUrl } } = await octokit.rest.issues.create({
