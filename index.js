@@ -113,18 +113,18 @@ const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
     '**Script generated description. DO NOT MODIFY**\n' +
     '\n' +
     '## Metadata\n' +
-    '- Release tag: ${nextTag}\n' +
-    '- Branch: release/${nextTag}\n' +
+    `- Release tag: ${nextTag}\n` +
+    `- Branch: release/${nextTag}\n` +
     '\n' +
     '## Actions\n' +
     '- To add release fixes:\n' +
-    '\t1. `git checkout release/${nextTag}`\n' +
+    `\t1. \`git checkout release/${nextTag}\`\n` +
     '\t2. Check in fixes to the release branch.\n' +
     '\t3. (If applied) Cherry-pick the fix to `master/main`.\n' +
     '- To approve the push: Add `QA Approved` label and close the issue.\n' +
     '- To cancel the push: Close the issue directly.\n' +
     '\n' +
-    '## Included commits (compared to ${latestTag})\n' +
+    `## Included commits (compared to ${latestTag})\n` +
     '\n' +
     commitDiff
 
