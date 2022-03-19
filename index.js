@@ -91,9 +91,15 @@ const getCommitDiff = async (octokit, latestTag) => {
   
   return commits.reduce((acc, curr) => {
     const sha = `<a href="${curr.html_url}">${curr.sha.substring(0, 7)}</a>`
-    // Add new prod domain (#5325)\n\n* add more prod naboo domain names (#5313)\r\n\r\n* add fw.camera
-    const regex = /(.+)\n/
-    const message = curr.commit.message
+    let message = curr.commit.message
+    
+    // Try to sanitize the message if it is a squashed commit message.
+    // Convert: "Something something PR with lots of commits (#5248)\n\n* First commit msg\r\n\r\n"
+    // To: "Something something PR with lots of commits (#5248)"
+    const regex = new RegExp(/^(.*?)\n/m)
+    const match = message.match(regex)
+    if (match) message = match[1]
+    
     return acc + `${sha}\t${message}\n`
   }, "")
 }
