@@ -64,6 +64,7 @@ const getTags = async (octokit) => {
 const getCommitDiff = async (octokit, latestTag) => {
   const { owner, repo } = github.context.repo
   const currentSha = github.context.sha
+  console.log(`Current SHA: ${currentSha}`)
   
   // Get common ancestor base commit. This solves the issue with hotfixes being cherry-picked.
   const {
@@ -77,16 +78,18 @@ const getCommitDiff = async (octokit, latestTag) => {
     repo,
     basehead: `release/${latestTag}...${currentSha}`
   })
+  console.log(`Merge Base SHA: ${mergeBaseSha}`)
   
   // Get the status and commit history.
   const { data: { status, commits } } = await octokit.rest.repos.compareCommitsWithBasehead({
     owner,
     repo,
-    basehead: `release/${mergeBaseSha}...${currentSha}`,
+    basehead: `${mergeBaseSha}...${currentSha}`,
     per_page: 100
   })
+  console.log(`Status: ${status}`)
 
-  console.log(`Commit diff: ${latestTag}...${currentSha}`)
+  console.log(`Commit diff: ${latestTag}...${mergeBaseSha}`)
   if (status !== 'ahead') throw Error('Head branch is not ahead of base branch')
   
   return commits.reduce((acc, curr) => {
