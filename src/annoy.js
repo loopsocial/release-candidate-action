@@ -34,7 +34,7 @@ const slack = require('./slack.js')
       }
     ]
   }
-  await slack(webhookUrl, body)
+  await slack.postToSlack(webhookUrl, body)
 }
 
 function moreThanXdays(dateInMS, daysAgo) {

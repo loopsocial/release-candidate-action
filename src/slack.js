@@ -15,7 +15,7 @@ const postToSlack = async (webhookUrl, body) => {
  * @param {string} nextTag Next tag
  * @param {string} issueUrl URL of the Release Candidate issue
  */
- const postRCCreated = async (webhookUrl,nextTag, issueUrl) => {
+const postRCCreated = async (webhookUrl, nextTag, issueUrl) => {
   const body = {
     "blocks": [
       {
@@ -46,4 +46,4 @@ const postToSlack = async (webhookUrl, body) => {
   await postToSlack(webhookUrl, body)
 }
 
-module.exports = { postRCCreated }
+module.exports = { postRCCreated, postToSlack }
