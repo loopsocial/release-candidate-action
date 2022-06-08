@@ -1,7 +1,9 @@
 const github = require('@actions/github')
 const core = require('@actions/core')
-const axios = require('axios')
 const moment = require('moment')
+const annoy = require('./src/annoy')
+const slack = require('./src/slack')
+
 
 /**
  * Gets the input from the used action.
@@ -163,49 +165,20 @@ const createIssue = async (octokit, latestTag, nextTag, commitDiff) => {
   return issueUrl
 }
 
-/**
- * Posts to Slack via webhook.
- * @param {string} nextTag Next tag
- * @param {string} issueUrl URL of the Release Candidate issue
- */
-const postToSlack = async (nextTag, issueUrl) => {
-  const body = {
-    "blocks": [
-      {
-        "type": "header",
-        "text": {
-          "type": "plain_text",
-          "text": `[${nextTag}] Release Candidate created 🧪`
-        }
-      },
-      {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": `\`${nextTag}\` is ready for testing.`
-        },
-        "accessory": {
-          "type": "button",
-          "text": {
-            "type": "plain_text",
-            "text": "Go"
-          },
-          "url": issueUrl,
-          "action_id": "button-action"
-        }
-      }
-    ]
-  }
-
-  const webhookUrl = getInput('slack-webhook-url')
-  await axios.post(webhookUrl, body)
-}
-
 const run = async () => {
   try {
+    const webhookUrl = getInput('slack-webhook-url')
     // Get token and init
-    const token = getInput('github-token')
+    // const token = getInput('github-token')
+    const token = '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'
     const octokit = github.getOctokit(token)
+    const annoy = getInput('annoy')
+    
+    // Send message to webhook about the issue
+    if (annoy) {
+      await annoy.postAnnoyance(webhookUrl, github, octokit)
+      return
+    }
     
     // Get next tag and commit history 
     const { latestTag, nextTag } = await getTags(octokit)
@@ -218,7 +191,8 @@ const run = async () => {
     const issueUrl = await createIssue(octokit, latestTag, nextTag, commitDiff)
 
     // Send webhook to Slack
-    await postToSlack(nextTag, issueUrl)
+    
+    await slack.postRCCreated(webhookUrl, nextTag, issueUrl)
   } catch (error) {
     core.setFailed(error.message)
   }
