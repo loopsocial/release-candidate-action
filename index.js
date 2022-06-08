@@ -169,8 +169,7 @@ const run = async () => {
   try {
     const webhookUrl = getInput('slack-webhook-url')
     // Get token and init
-    // const token = getInput('github-token')
-    const token = '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'
+    const token = getInput('github-token')
     const octokit = github.getOctokit(token)
     const annoy = getInput('annoy')
     
